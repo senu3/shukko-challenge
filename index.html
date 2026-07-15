@@ -41,32 +41,40 @@
   }
   #startScreen.hidden{ display:none; }
   .setup-shell{
-    width:min(900px,100%); margin:auto;
-    display:grid; grid-template-columns:minmax(250px,0.8fr) minmax(360px,1.2fr);
-    gap:16px; align-items:stretch;
+    width:min(600px,100%); margin:auto;
   }
-  .setup-brief{ padding:10px 4px; display:flex; flex-direction:column; justify-content:center; }
+  .setup-card{
+    background:var(--panel-bg); border:1px solid var(--panel-border);
+    border-radius:10px; padding:16px 18px; min-width:0;
+  }
+  .setup-brand{ display:flex; align-items:center; gap:12px; margin-bottom:12px; }
   .badge{
-    align-self:flex-start; font-family:var(--mono); font-size:11px; letter-spacing:0.14em;
+    flex:0 0 auto; font-family:var(--mono); font-size:10px; letter-spacing:0.12em;
     color:var(--signal-amber); border:1px solid var(--signal-amber);
-    padding:3px 9px; border-radius:2px; margin-bottom:10px;
+    padding:3px 8px; border-radius:2px;
   }
   #startScreen h1{
-    font-size:23px; margin:0 0 5px; font-weight:700; letter-spacing:0.02em;
+    font-size:20px; margin:0; font-weight:700; letter-spacing:0.02em;
     text-wrap:balance;
   }
+  .view-hidden{ display:none!important; }
+  .setup-brief{ text-align:center; }
   #startScreen .sub{
-    color:#b5b8bd; font-size:12px; line-height:1.65; margin:0 0 14px;
-    max-width:44ch; text-wrap:pretty;
+    color:#b5b8bd; font-size:12px; line-height:1.6; margin:0 auto 8px;
+    max-width:52ch; text-wrap:pretty;
   }
+  .intro-title{ font-size:18px; margin:0 0 5px; text-wrap:balance; }
+  .intro-copy{ margin:0; color:#d0d2d5; font-size:12px; line-height:1.55; }
   .hold-guide{
-    display:flex; align-items:center; gap:12px; color:var(--text-bright);
-    font-size:11px; line-height:1.5;
+    display:flex; align-items:center; justify-content:center; gap:14px;
+    min-height:72px; margin:8px 0; color:var(--text-bright);
+    font-size:12px; line-height:1.5; text-align:left;
   }
-  .phone-demo-wrap{ width:84px; height:54px; flex:0 0 84px; display:grid; place-items:center; }
+  .phone-demo-wrap{ width:100px; height:64px; flex:0 0 100px; display:grid; place-items:center; }
   #phoneDemo{
-    width:66px; height:34px; border:2px solid #b7bbc1; border-radius:6px;
+    width:82px; height:42px; border:2px solid #b7bbc1; border-radius:7px;
     position:relative; transform:rotate(0deg); transform-origin:center;
+    transition:transform 0.18s cubic-bezier(.22,1,.36,1), border-color 0.18s ease;
   }
   #phoneDemo::before{
     content:""; position:absolute; inset:4px 9px; border:1px solid #555a61; border-radius:2px;
@@ -77,13 +85,8 @@
     background:var(--signal-amber); right:3px; top:50%; transform:translateY(-50%);
   }
   .setup-note{
-    margin:12px 0 0; padding-top:10px; border-top:1px solid #34373c;
-    color:#a9adb3; font-size:11px; line-height:1.55;
-  }
-  .diagnostic-panel{
-    background:var(--panel-bg); border:1px solid var(--panel-border);
-    border-radius:10px; padding:14px 16px; min-width:0;
-    display:flex; flex-direction:column; justify-content:center;
+    margin:8px 0 10px; padding-top:8px; border-top:1px solid #34373c;
+    color:#a9adb3; font-size:10px; line-height:1.5; text-align:center;
   }
   .diag-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
   #setupStep{ font-family:var(--mono); font-size:10px; color:#b5b8bd; letter-spacing:0.06em; }
@@ -98,12 +101,21 @@
   #sensorState[data-state="working"]::before{ background:var(--signal-amber); box-shadow:0 0 0 2px rgba(232,163,61,0.2); }
   #sensorState[data-state="good"]::before{ background:var(--signal-green); box-shadow:0 0 0 2px rgba(79,157,110,0.22); }
   #sensorState[data-state="bad"]::before{ background:var(--signal-red); box-shadow:0 0 0 2px rgba(200,69,58,0.22); }
-  .diag-title{ font-size:17px; margin:0 0 4px; text-wrap:balance; }
-  #setupInstruction{ margin:0 0 12px; min-height:34px; color:#bfc2c7; font-size:12px; line-height:1.5; }
-  .angle-readout{ display:flex; align-items:baseline; justify-content:center; gap:4px; margin:0 0 8px; }
-  #angleValue{ font:700 30px/1 var(--mono); font-variant-numeric:tabular-nums; }
+  .setup-progress{
+    list-style:none; display:flex; gap:6px; margin:0 0 12px; padding:0;
+  }
+  .setup-progress li{
+    flex:1; min-width:0; padding:6px 4px; border-bottom:3px solid #34383e;
+    color:#8f949b; font:10px var(--mono); text-align:center;
+  }
+  .setup-progress li.current{ border-color:var(--signal-amber); color:#f0c273; }
+  .setup-progress li.done{ border-color:var(--signal-green); color:#a9d5b9; }
+  .diag-title{ font-size:18px; margin:0 0 4px; text-align:center; text-wrap:balance; }
+  #setupInstruction{ margin:0 auto 5px; min-height:36px; max-width:52ch; color:#c5c8cc; font-size:12px; line-height:1.5; text-align:center; }
+  .angle-readout{ display:flex; align-items:baseline; justify-content:center; gap:4px; margin:0 0 5px; }
+  #angleValue{ font:700 28px/1 var(--mono); font-variant-numeric:tabular-nums; }
   .angle-unit{ color:#aeb2b8; font:11px var(--mono); }
-  .angle-meter{ position:relative; height:34px; margin:0 6px 10px; }
+  .angle-meter{ position:relative; height:34px; margin:0 6px 8px; }
   .angle-track{
     position:absolute; left:0; right:0; top:14px; height:4px; border-radius:4px; background:#34383e;
   }
@@ -124,12 +136,6 @@
   .stability-track{ flex:1; height:6px; background:#30343a; border-radius:5px; overflow:hidden; }
   #stabilityFill{ width:0; height:100%; background:var(--signal-amber); }
   #stabilityText{ width:70px; text-align:right; color:#bfc2c7; font:10px var(--mono); }
-  .turn-test{ display:flex; gap:8px; margin-bottom:11px; }
-  .turn-check{
-    flex:1; min-width:0; padding:7px 8px; border:1px solid #3d4147; border-radius:5px;
-    color:#aeb2b8; font:10px var(--mono); text-align:center;
-  }
-  .turn-check.done{ border-color:var(--signal-green); color:#a9d5b9; background:rgba(79,157,110,0.1); }
   .setup-actions{ display:flex; align-items:center; gap:8px; }
   #startBtn{
     flex:1;
@@ -146,25 +152,29 @@
   #keyboardBtn.show{ display:block; }
   #modeNote{ margin:9px 0 0; font-size:10px; line-height:1.45; color:#b5b8bd; font-family:var(--mono); min-height:14px; }
 
-  @media (max-width:720px) and (orientation:portrait){
-    .setup-shell{ grid-template-columns:1fr; max-width:540px; }
-    .setup-brief{ padding:0; }
-  }
   @media (max-height:430px) and (orientation:landscape){
-    #startScreen{ align-items:flex-start; padding:8px 12px; }
-    .setup-shell{ gap:10px; }
-    .setup-brief{ padding:4px 0; }
+    #startScreen{ align-items:flex-start; padding:4px 10px; }
+    .setup-card{ padding:8px 12px; }
+    .setup-brand{ margin-bottom:4px; }
     #startScreen h1{ font-size:19px; }
-    #startScreen .sub{ margin-bottom:8px; line-height:1.45; }
-    .setup-note{ margin-top:7px; padding-top:7px; }
-    .diagnostic-panel{ padding:10px 13px; }
-    .diag-head{ margin-bottom:5px; }
+    #startScreen .sub{ margin-bottom:5px; line-height:1.45; }
+    .intro-title{ font-size:16px; }
+    .hold-guide{ min-height:44px; margin:2px 0; }
+    .phone-demo-wrap{ height:42px; }
+    #phoneDemo{ width:64px; height:33px; }
+    .setup-note{ margin:4px 0 7px; padding-top:6px; }
+    .diag-head{ margin-bottom:3px; }
+    .setup-progress{ margin-bottom:5px; }
+    .setup-progress li{ padding:3px 2px; }
     .diag-title{ font-size:15px; }
-    #setupInstruction{ min-height:28px; margin-bottom:7px; }
-    .angle-readout{ margin-bottom:4px; }
-    #angleValue{ font-size:25px; }
-    .angle-meter{ margin-bottom:5px; }
-    .stability-row,.turn-test{ margin-bottom:7px; }
+    #setupInstruction{ min-height:0; margin-bottom:2px; line-height:1.35; }
+    .angle-readout{ margin-bottom:2px; }
+    #angleValue{ font-size:24px; }
+    .angle-meter{ height:30px; margin-bottom:2px; }
+    .angle-limit{ top:20px; }
+    .stability-row{ margin-bottom:5px; }
+    #startBtn,#keyboardBtn{ min-height:44px; }
+    #modeNote{ margin-top:5px; min-height:0; }
   }
 
   /* ---------- HUD ---------- */
@@ -357,49 +367,60 @@
 
 <div id="startScreen" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
   <div class="setup-shell">
-    <section class="setup-brief">
-      <div class="badge">PAPER DRIVER TRAINING</div>
-      <h1 id="setupTitle">出庫チャレンジ</h1>
-      <p class="sub">走り出す前に、スマートフォンの中立位置と左右の入力を確認します。</p>
+    <section class="setup-card">
+      <header class="setup-brand">
+        <div class="badge">PAPER DRIVER TRAINING</div>
+        <h1 id="setupTitle">出庫チャレンジ</h1>
+      </header>
+
+      <div id="introView" class="setup-brief">
+        <p class="sub">スマートフォンをハンドルに見立てて、駐車スペースから出てみましょう。</p>
+        <h2 class="intro-title">まずはセンサーを確認しましょう</h2>
+        <p class="intro-copy">OKを押したあと、画面の案内に合わせて持ち方と左右の動きを確認します。</p>
+      </div>
+
+      <div id="diagnosticView" class="view-hidden" aria-labelledby="setupPanelTitle">
+        <div class="diag-head">
+          <span id="setupStep">センサー準備</span>
+          <span id="sensorState" data-state="idle"><span id="sensorStateText">未確認</span></span>
+        </div>
+        <ol id="setupProgress" class="setup-progress" aria-label="センサー確認の進行状況">
+          <li data-progress="center">1 正面</li>
+          <li data-progress="right">2 右へ</li>
+          <li data-progress="left">3 左へ</li>
+          <li data-progress="ready">4 完了</li>
+        </ol>
+        <h2 id="setupPanelTitle" class="diag-title">センサーを準備しています</h2>
+        <p id="setupInstruction">画面の案内に沿って進めてください。</p>
+      </div>
 
       <div class="hold-guide">
         <div class="phone-demo-wrap" aria-hidden="true"><div id="phoneDemo"></div></div>
-        <div>画面を顔に向けて横向きにし、ハンドルのように両手で持ってください。</div>
-      </div>
-      <p class="setup-note">走行中：画面長押しでアクセル／中央下でブレーキ／右下のレバーでD・R切替</p>
-    </section>
-
-    <section class="diagnostic-panel" aria-labelledby="setupPanelTitle">
-      <div class="diag-head">
-        <span id="setupStep">準備 1/3</span>
-        <span id="sensorState" data-state="idle"><span id="sensorStateText">未確認</span></span>
-      </div>
-      <h2 id="setupPanelTitle" class="diag-title">センサーを確認します</h2>
-      <p id="setupInstruction">ボタンを押すとセンサー利用の確認が表示されます。スマホを正面で静かに持ってください。</p>
-
-      <div class="angle-readout" aria-label="現在の操舵角">
-        <span id="angleValue">--</span><span class="angle-unit">deg</span>
-      </div>
-      <div class="angle-meter" aria-hidden="true">
-        <div class="angle-track"></div>
-        <span class="angle-limit left">-60</span>
-        <span class="angle-limit center">0</span>
-        <span class="angle-limit right">+60</span>
-        <span id="angleNeedle"></span>
+        <div id="holdHint">画面を顔に向けて横向きにし、ハンドルのように両手で持ってください。</div>
       </div>
 
-      <div class="stability-row">
-        <span class="stability-label">STABILITY</span>
-        <div class="stability-track"><div id="stabilityFill"></div></div>
-        <span id="stabilityText">待機中</span>
+      <div id="diagnosticData" class="view-hidden">
+        <div class="angle-readout" aria-label="現在の操舵角">
+          <span id="angleValue">--</span><span class="angle-unit">deg</span>
+        </div>
+        <div class="angle-meter" aria-hidden="true">
+          <div class="angle-track"></div>
+          <span class="angle-limit left">-60</span>
+          <span class="angle-limit center">0</span>
+          <span class="angle-limit right">+60</span>
+          <span id="angleNeedle"></span>
+        </div>
+        <div class="stability-row">
+          <span class="stability-label">STABILITY</span>
+          <div class="stability-track"><div id="stabilityFill"></div></div>
+          <span id="stabilityText">待機中</span>
+        </div>
       </div>
-      <div class="turn-test" aria-label="左右入力テスト">
-        <div id="leftCheck" class="turn-check">○ 左側入力</div>
-        <div id="rightCheck" class="turn-check">○ 右側入力</div>
-      </div>
+
+      <p id="setupNote" class="setup-note">走行中：画面長押しでアクセル／中央下でブレーキ／右下のレバーでD・R切替</p>
 
       <div class="setup-actions">
-        <button id="startBtn" type="button">センサーを確認する</button>
+        <button id="startBtn" type="button">OK</button>
         <button id="keyboardBtn" type="button">PCキーで開始</button>
       </div>
       <div id="modeNote" role="status" aria-live="polite"></div>
@@ -469,12 +490,11 @@
   let sensorEventSeen = false;
   let sensorPostureOk = false;
   let sensorPlaneGravity = 0;
-  let setupState = "intro"; // intro | requesting | calibrating | testing | ready | fallback
+  let setupState = "intro"; // intro | requesting | calibrating | testingRight | testingLeft | returnCenter | ready | fallback
   let setupResumeGame = false;
   let calibrationSamples = [];
   let calibrationTimer = null;
-  let diagnosticLeftSeen = false;
-  let diagnosticRightSeen = false;
+  let sensorDirectionSign = 1; // 実機で「右へ回す」方向を正として自動設定
 
   let keyLeft=false, keyRight=false, keyAccel=false, keyBrake=false;
   let pointerAccelCount = 0; // active accelerator touches on background
@@ -536,7 +556,7 @@
     rawAngleDeg = Math.atan2(acc.x, acc.y) * 180/Math.PI;
 
     if(setupState === "calibrating") collectCalibrationSample(rawAngleDeg);
-    if(setupState === "testing") updateTurnTest();
+    if(setupState === "testingRight" || setupState === "testingLeft" || setupState === "returnCenter") updateGuidedSensorTest();
     renderSetupDiagnostics();
   }
 
@@ -569,22 +589,24 @@
 
     baselineAngleDeg = mean;
     smoothedSteerDeg = 0;
-    diagnosticLeftSeen = false;
-    diagnosticRightSeen = false;
     clearCalibrationTimer();
-    setSetupState("testing");
+    setSetupState("testingRight");
   }
 
-  function updateTurnTest(){
+  function updateGuidedSensorTest(){
     if(rawAngleDeg===null) return;
-    const relative = angleDiff(rawAngleDeg, baselineAngleDeg);
-    if(relative <= -SENSOR_CONFIG.testThresholdDeg) diagnosticLeftSeen = true;
-    if(relative >=  SENSOR_CONFIG.testThresholdDeg) diagnosticRightSeen = true;
-    document.getElementById("leftCheck").classList.toggle("done", diagnosticLeftSeen);
-    document.getElementById("rightCheck").classList.toggle("done", diagnosticRightSeen);
-    document.getElementById("leftCheck").textContent = (diagnosticLeftSeen?"✓":"○") + " 左側入力";
-    document.getElementById("rightCheck").textContent = (diagnosticRightSeen?"✓":"○") + " 右側入力";
-    if(diagnosticLeftSeen && diagnosticRightSeen) setSetupState("ready");
+    const rawRelative = angleDiff(rawAngleDeg, baselineAngleDeg);
+    if(setupState === "testingRight" && Math.abs(rawRelative) >= SENSOR_CONFIG.testThresholdDeg){
+      sensorDirectionSign = rawRelative>=0 ? 1 : -1;
+      setSetupState("testingLeft");
+      return;
+    }
+    const relative = rawRelative*sensorDirectionSign;
+    if(setupState === "testingLeft" && relative <= -SENSOR_CONFIG.testThresholdDeg){
+      setSetupState("returnCenter");
+    }else if(setupState === "returnCenter" && Math.abs(relative) <= 8){
+      setSetupState("ready");
+    }
   }
 
   function clearCalibrationTimer(){
@@ -601,14 +623,9 @@
     setupResumeGame = !!returnToGame;
     calibrationSamples = [];
     sensorEventSeen = false;
-    diagnosticLeftSeen = false;
-    diagnosticRightSeen = false;
+    sensorDirectionSign = 1;
     rawAngleDeg = null;
     sensorPostureOk = false;
-    document.getElementById("leftCheck").classList.remove("done");
-    document.getElementById("rightCheck").classList.remove("done");
-    document.getElementById("leftCheck").textContent = "○ 左側入力";
-    document.getElementById("rightCheck").textContent = "○ 右側入力";
     document.getElementById("startScreen").classList.remove("hidden");
     document.getElementById("startScreen").setAttribute("aria-hidden","false");
     document.getElementById("startScreen").scrollTop=0;
@@ -638,8 +655,10 @@
     if(rawAngleDeg!==null){
       if(setupState === "calibrating" && calibrationSamples.length){
         relative=angleDiff(rawAngleDeg, calibrationSamples[0]);
-      }else if(setupState === "testing" || setupState === "ready"){
-        relative=angleDiff(rawAngleDeg, baselineAngleDeg);
+      }else if(setupState === "testingRight"){
+        relative=Math.abs(angleDiff(rawAngleDeg, baselineAngleDeg));
+      }else if(setupState === "testingLeft" || setupState === "returnCenter" || setupState === "ready"){
+        relative=angleDiff(rawAngleDeg, baselineAngleDeg)*sensorDirectionSign;
       }
     }
     const displayAngle=relative===null?0:Math.max(-60,Math.min(60,relative));
@@ -663,7 +682,7 @@
         fill.style.width=`${Math.round(sampleRatio*quality*100)}%`;
         stabilityText.textContent=quality<0.7?"静止する":`${calibrationSamples.length}/${SENSOR_CONFIG.minSamples}`;
       }
-    }else if(setupState === "testing" || setupState === "ready"){
+    }else if(setupState === "testingRight" || setupState === "testingLeft" || setupState === "returnCenter" || setupState === "ready"){
       fill.style.width="100%";
       fill.style.background="var(--signal-green)";
       stabilityText.textContent="固定済み";
@@ -673,22 +692,22 @@
       stabilityText.textContent="待機中";
     }
 
-    if(setupState === "ready"){
-      const centered=relative!==null && Math.abs(relative)<=8;
-      const primary=document.getElementById("startBtn");
-      const title=document.getElementById("setupPanelTitle");
-      const instruction=document.getElementById("setupInstruction");
-      const sensor=document.getElementById("sensorState");
-      const sensorText=document.getElementById("sensorStateText");
-      primary.disabled=!centered;
-      primary.textContent=centered?(setupResumeGame?"走行に戻る":"練習を始める"):"中立位置へ戻してください";
-      title.textContent=centered?"準備できました":"スマホを正面へ戻してください";
-      instruction.textContent=centered
-        ? "中立点と左右入力を確認できました。この位置を保ったまま開始してください。"
-        : "左右の確認は完了しました。角度表示が0°付近になるまでゆっくり戻してください。";
-      sensor.dataset.state=centered?"good":"working";
-      sensorText.textContent=centered?"入力 正常":"中立へ戻す";
-    }
+  }
+
+  function updateSetupProgress(state){
+    const items=[...document.querySelectorAll("#setupProgress li")];
+    const activeByState={requesting:0,calibrating:0,testingRight:1,testingLeft:2,returnCenter:3};
+    const doneByState={requesting:0,calibrating:0,testingRight:1,testingLeft:2,returnCenter:3,ready:4};
+    const active=activeByState[state];
+    const done=doneByState[state]||0;
+    items.forEach((item,index)=>{
+      const isDone=index<done || state==="ready";
+      const isCurrent=state!=="ready" && index===active;
+      item.classList.toggle("done",isDone);
+      item.classList.toggle("current",isCurrent);
+      if(isCurrent) item.setAttribute("aria-current","step"); else item.removeAttribute("aria-current");
+      item.setAttribute("aria-label",`${item.textContent}${isDone?" 完了":isCurrent?" 現在":""}`);
+    });
   }
 
   function setSetupState(state, detail){
@@ -701,41 +720,69 @@
     const primary=document.getElementById("startBtn");
     const keyboard=document.getElementById("keyboardBtn");
     const note=document.getElementById("modeNote");
+    const intro=document.getElementById("introView");
+    const diagnostic=document.getElementById("diagnosticView");
+    const diagnosticData=document.getElementById("diagnosticData");
+    const setupNote=document.getElementById("setupNote");
+    const holdHint=document.getElementById("holdHint");
     if(!primary) return;
     primary.disabled=false;
+    primary.classList.remove("view-hidden");
     keyboard.classList.remove("show");
     note.textContent="";
+    note.classList.toggle("view-hidden",!(state==="ready" || state==="fallback"));
+    const isIntro=state==="intro";
+    intro.classList.toggle("view-hidden",!isIntro);
+    diagnostic.classList.toggle("view-hidden",isIntro);
+    diagnosticData.classList.toggle("view-hidden",isIntro || state==="fallback");
+    setupNote.classList.toggle("view-hidden",!isIntro);
+    updateSetupProgress(state);
 
     if(state==="intro"){
-      step.textContent="準備 1/3"; sensor.dataset.state="idle"; sensorText.textContent="未確認";
-      title.textContent="センサーを確認します";
-      instruction.textContent="ボタンを押すとセンサー利用の確認が表示されます。スマホを正面で静かに持ってください。";
-      primary.textContent="センサーを確認する"; primary.dataset.action="request";
+      holdHint.textContent="画面を顔に向けて横向きにし、ハンドルのように両手で持ってください。";
+      primary.textContent="OK"; primary.dataset.action="request";
     }else if(state==="requesting"){
-      step.textContent="準備 1/3"; sensor.dataset.state="working"; sensorText.textContent="許可を確認中";
+      step.textContent="センサー準備"; sensor.dataset.state="working"; sensorText.textContent="許可を確認中";
       title.textContent="センサーの許可を確認中";
       instruction.textContent="ブラウザの確認が表示された場合は、センサーの利用を許可してください。";
-      primary.textContent="確認中…"; primary.disabled=true;
+      holdHint.textContent="スマホを横向きのまま持ってお待ちください。";
+      primary.textContent="確認中…"; primary.disabled=true; primary.classList.add("view-hidden");
     }else if(state==="calibrating"){
-      step.textContent="準備 1/3"; sensor.dataset.state="working"; sensorText.textContent="測定中";
-      title.textContent="中立位置を測定しています";
-      instruction.textContent="画面を顔に向け、正面で動かさずに持ってください。安定すると自動で確定します。";
-      primary.textContent="静止してお待ちください"; primary.disabled=true;
-    }else if(state==="testing"){
-      step.textContent="準備 2/3"; sensor.dataset.state="good"; sensorText.textContent="中立点 固定済み";
-      title.textContent="左右の入力を確認します";
-      instruction.textContent="中立位置からスマホを左側・右側へ、それぞれ約20°ゆっくり回してください。";
-      primary.textContent="左右に回してください"; primary.disabled=true;
+      step.textContent="準備 1/4"; sensor.dataset.state="working"; sensorText.textContent="正面を測定中";
+      title.textContent="スマホを正面で静かに持って";
+      instruction.textContent="画面を顔へ向けたまま動かさずに。安定すると自動で次へ進みます。";
+      holdHint.textContent="この位置を保ってください。";
+      primary.textContent="静止してお待ちください"; primary.disabled=true; primary.classList.add("view-hidden");
+    }else if(state==="testingRight"){
+      step.textContent="準備 2/4"; sensor.dataset.state="working"; sensorText.textContent="右入力を確認";
+      title.textContent="スマホを右へ傾けて";
+      instruction.textContent="ハンドルを右へ切るように、約20°ゆっくり回してください。";
+      holdHint.textContent="両手でゆっくり右へ。";
+      primary.textContent="右へ傾けてください"; primary.disabled=true; primary.classList.add("view-hidden");
+    }else if(state==="testingLeft"){
+      step.textContent="準備 3/4"; sensor.dataset.state="working"; sensorText.textContent="左入力を確認";
+      title.textContent="次は、スマホを左へ傾けて";
+      instruction.textContent="正面を通り過ぎて、左へ約20°ゆっくり回してください。";
+      holdHint.textContent="そのままゆっくり左へ。";
+      primary.textContent="左へ傾けてください"; primary.disabled=true; primary.classList.add("view-hidden");
+    }else if(state==="returnCenter"){
+      step.textContent="準備 4/4"; sensor.dataset.state="working"; sensorText.textContent="中立へ戻す";
+      title.textContent="最後に、スマホを正面へ戻して";
+      instruction.textContent="角度表示が0°付近になると確認完了です。";
+      holdHint.textContent="最初の正面位置へゆっくり戻してください。";
+      primary.textContent="正面へ戻してください"; primary.disabled=true; primary.classList.add("view-hidden");
     }else if(state==="ready"){
-      step.textContent="準備 3/3"; sensor.dataset.state="good"; sensorText.textContent="入力 正常";
+      step.textContent="確認完了"; sensor.dataset.state="good"; sensorText.textContent="入力 正常";
       title.textContent="準備できました";
-      instruction.textContent="中立点と左右入力を確認できました。スマホを正面へ戻してから開始してください。";
+      instruction.textContent="正面・右・左の入力を確認できました。この位置を保ったまま始めましょう。";
+      holdHint.textContent="スマホを正面に保ってください。";
       primary.textContent=setupResumeGame?"走行に戻る":"練習を始める"; primary.dataset.action="start";
       note.textContent="走行中も右上のボタンから再キャリブレーションできます。";
     }else if(state==="fallback"){
       step.textContent="センサー確認"; sensor.dataset.state="bad"; sensorText.textContent="利用できません";
       title.textContent="センサーを確認できませんでした";
       instruction.textContent=detail||"センサーの許可が得られませんでした。ブラウザ設定を確認して、もう一度お試しください。";
+      holdHint.textContent="ブラウザまたは端末のセンサー設定を確認してください。";
       primary.textContent="もう一度確認する"; primary.dataset.action="request";
       keyboard.classList.add("show");
       note.textContent="PCでは矢印キーで動作確認できます。スマートフォンではセンサーを許可してください。";
@@ -851,7 +898,7 @@
   function updateSteeringInput(dt){
     let targetDeg = 0;
     if(useMotion && rawAngleDeg!==null){
-      let rel = angleDiff(rawAngleDeg, baselineAngleDeg);
+      let rel = angleDiff(rawAngleDeg, baselineAngleDeg)*sensorDirectionSign;
       if(invertSteer) rel = -rel;
       targetDeg = Math.max(-CONFIG.steerInputMaxDeg, Math.min(CONFIG.steerInputMaxDeg, rel));
     } else {
