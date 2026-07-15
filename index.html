@@ -64,7 +64,6 @@
     max-width:52ch; text-wrap:pretty;
   }
   .intro-title{ font-size:18px; margin:0 0 5px; text-wrap:balance; }
-  .intro-copy{ margin:0; color:#d0d2d5; font-size:12px; line-height:1.55; }
   .hold-guide{
     display:flex; align-items:center; justify-content:center; gap:14px;
     min-height:72px; margin:8px 0; color:var(--text-bright);
@@ -323,8 +322,8 @@
     <rect x="7" y="2" width="10" height="16" rx="1.6" transform="rotate(90 12 10)"/>
     <path d="M19 7c1 1.6 1 4.4 0 6M19 13l1.4 1.4M19 13l-1.7 0.4" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
-  <h2>スマホを横向きにしてください</h2>
-  <p>このゲームはハンドル操作のため横画面専用です。端末を回転させてください。</p>
+  <h2>スマホを横向きに</h2>
+  <p>横画面でプレイします。</p>
 </div>
 
 <div id="hud" class="hidden">
@@ -374,9 +373,8 @@
       </header>
 
       <div id="introView" class="setup-brief">
-        <p class="sub">スマートフォンをハンドルに見立てて、駐車スペースから出てみましょう。</p>
-        <h2 class="intro-title">まずはセンサーを確認しましょう</h2>
-        <p class="intro-copy">OKを押したあと、画面の案内に合わせて持ち方と左右の動きを確認します。</p>
+        <p class="sub">スマホを回して、駐車スペースから出よう。</p>
+        <h2 class="intro-title">まずはセンサー確認</h2>
       </div>
 
       <div id="diagnosticView" class="view-hidden" aria-labelledby="setupPanelTitle">
@@ -396,7 +394,7 @@
 
       <div class="hold-guide">
         <div class="phone-demo-wrap" aria-hidden="true"><div id="phoneDemo"></div></div>
-        <div id="holdHint">画面を顔に向けて横向きにし、ハンドルのように両手で持ってください。</div>
+        <div id="holdHint">横向きで両手に持つ</div>
       </div>
 
       <div id="diagnosticData" class="view-hidden">
@@ -417,10 +415,10 @@
         </div>
       </div>
 
-      <p id="setupNote" class="setup-note">走行中：画面長押しでアクセル／中央下でブレーキ／右下のレバーでD・R切替</p>
+      <p id="setupNote" class="setup-note">長押し：アクセル　BRAKE：停止　D/R：切替</p>
 
       <div class="setup-actions">
-        <button id="startBtn" type="button">OK</button>
+        <button id="startBtn" type="button">確認する</button>
         <button id="keyboardBtn" type="button">PCキーで開始</button>
       </div>
       <div id="modeNote" role="status" aria-live="polite"></div>
@@ -636,8 +634,8 @@
       if(setupState === "calibrating"){
         useMotion=false;
         const detail=sensorEventSeen
-          ? "端末の画面が水平に近いか、動きが大きいため中立点を確定できませんでした。画面を顔に向けて静かに持ち、もう一度お試しください。"
-          : "センサー値を受信できませんでした。HTTPSで開いているか、ブラウザのセンサー許可を確認してください。";
+          ? "正面で静止できませんでした。スマホを立てて再確認してください。"
+          : "センサーを受信できません。HTTPSとブラウザ設定を確認してください。";
         setSetupState("fallback", detail);
       }
     }, SENSOR_CONFIG.sensorTimeoutMs);
@@ -736,56 +734,50 @@
     diagnostic.classList.toggle("view-hidden",isIntro);
     diagnosticData.classList.toggle("view-hidden",isIntro || state==="fallback");
     setupNote.classList.toggle("view-hidden",!isIntro);
+    holdHint.classList.toggle("view-hidden",!isIntro);
     updateSetupProgress(state);
 
     if(state==="intro"){
-      holdHint.textContent="画面を顔に向けて横向きにし、ハンドルのように両手で持ってください。";
-      primary.textContent="OK"; primary.dataset.action="request";
+      holdHint.textContent="横向きで両手に持つ";
+      primary.textContent="確認する"; primary.dataset.action="request";
     }else if(state==="requesting"){
       step.textContent="センサー準備"; sensor.dataset.state="working"; sensorText.textContent="許可を確認中";
-      title.textContent="センサーの許可を確認中";
-      instruction.textContent="ブラウザの確認が表示された場合は、センサーの利用を許可してください。";
-      holdHint.textContent="スマホを横向きのまま持ってお待ちください。";
+      title.textContent="センサーを許可";
+      instruction.textContent="確認が出たら「許可」";
       primary.textContent="確認中…"; primary.disabled=true; primary.classList.add("view-hidden");
     }else if(state==="calibrating"){
       step.textContent="準備 1/4"; sensor.dataset.state="working"; sensorText.textContent="正面を測定中";
-      title.textContent="スマホを正面で静かに持って";
-      instruction.textContent="画面を顔へ向けたまま動かさずに。安定すると自動で次へ進みます。";
-      holdHint.textContent="この位置を保ってください。";
+      title.textContent="正面で止める";
+      instruction.textContent="動かさずキープ";
       primary.textContent="静止してお待ちください"; primary.disabled=true; primary.classList.add("view-hidden");
     }else if(state==="testingRight"){
       step.textContent="準備 2/4"; sensor.dataset.state="working"; sensorText.textContent="右入力を確認";
-      title.textContent="スマホを右へ傾けて";
-      instruction.textContent="ハンドルを右へ切るように、約20°ゆっくり回してください。";
-      holdHint.textContent="両手でゆっくり右へ。";
+      title.textContent="右へ回す";
+      instruction.textContent="20°まで";
       primary.textContent="右へ傾けてください"; primary.disabled=true; primary.classList.add("view-hidden");
     }else if(state==="testingLeft"){
       step.textContent="準備 3/4"; sensor.dataset.state="working"; sensorText.textContent="左入力を確認";
-      title.textContent="次は、スマホを左へ傾けて";
-      instruction.textContent="正面を通り過ぎて、左へ約20°ゆっくり回してください。";
-      holdHint.textContent="そのままゆっくり左へ。";
+      title.textContent="左へ回す";
+      instruction.textContent="20°まで";
       primary.textContent="左へ傾けてください"; primary.disabled=true; primary.classList.add("view-hidden");
     }else if(state==="returnCenter"){
       step.textContent="準備 4/4"; sensor.dataset.state="working"; sensorText.textContent="中立へ戻す";
-      title.textContent="最後に、スマホを正面へ戻して";
-      instruction.textContent="角度表示が0°付近になると確認完了です。";
-      holdHint.textContent="最初の正面位置へゆっくり戻してください。";
+      title.textContent="正面へ戻す";
+      instruction.textContent="0°で完了";
       primary.textContent="正面へ戻してください"; primary.disabled=true; primary.classList.add("view-hidden");
     }else if(state==="ready"){
       step.textContent="確認完了"; sensor.dataset.state="good"; sensorText.textContent="入力 正常";
-      title.textContent="準備できました";
-      instruction.textContent="正面・右・左の入力を確認できました。この位置を保ったまま始めましょう。";
-      holdHint.textContent="スマホを正面に保ってください。";
+      title.textContent="準備OK";
+      instruction.textContent="そのままスタート";
       primary.textContent=setupResumeGame?"走行に戻る":"練習を始める"; primary.dataset.action="start";
-      note.textContent="走行中も右上のボタンから再キャリブレーションできます。";
+      note.textContent="右上で再調整";
     }else if(state==="fallback"){
       step.textContent="センサー確認"; sensor.dataset.state="bad"; sensorText.textContent="利用できません";
-      title.textContent="センサーを確認できませんでした";
-      instruction.textContent=detail||"センサーの許可が得られませんでした。ブラウザ設定を確認して、もう一度お試しください。";
-      holdHint.textContent="ブラウザまたは端末のセンサー設定を確認してください。";
-      primary.textContent="もう一度確認する"; primary.dataset.action="request";
+      title.textContent="センサーを使えません";
+      instruction.textContent=detail||"ブラウザ設定でセンサーを許可してください。";
+      primary.textContent="再確認"; primary.dataset.action="request";
       keyboard.classList.add("show");
-      note.textContent="PCでは矢印キーで動作確認できます。スマートフォンではセンサーを許可してください。";
+      note.textContent="PCのみ矢印キーで確認できます。";
     }
     renderSetupDiagnostics();
   }
@@ -840,7 +832,7 @@
       e.stopPropagation();
       if(!car) return;
       if(Math.abs(car.speed) > CONFIG.gearSwitchMaxSpeed){
-        flashToast("停止してから切替してください", "bad", 800);
+        flashToast("停止して切替", "bad", 800);
         return;
       }
       car.gear *= -1;
@@ -853,7 +845,7 @@
         car.speed=0;
         beginCalibration(true);
       }else{
-        flashToast("センサー使用時のみ再設定できます", "bad", 1000);
+        flashToast("センサー未使用", "bad", 1000);
       }
     });
     const invBtn = document.getElementById("invertBtn");
@@ -1001,11 +993,11 @@
       if(checkCollision(poly)){
         car.x=prevX; car.y=prevY; car.heading=prevH; car.speed=0;
         gameState="crashed";
-        flashToast("ぶつかりました", "bad", 99999);
+        flashToast("接触しました", "bad", 99999);
         document.getElementById("retryBtn").classList.add("show");
       } else if(checkGoal()){
         gameState="cleared";
-        flashToast("クリア!出庫できました", "good", 99999);
+        flashToast("出庫成功！", "good", 99999);
         document.getElementById("retryBtn").classList.add("show");
       }
     }
@@ -1254,14 +1246,14 @@
     const hasMotionAPI = (typeof DeviceMotionEvent !== "undefined");
     if(!hasMotionAPI){
       useMotion = false;
-      setSetupState("fallback", "このブラウザはモーションセンサーに対応していません。対応するスマートフォンのブラウザで開いてください。");
+      setSetupState("fallback", "センサー非対応です。別のスマホで開いてください。");
       return;
     }
 
     const granted = await requestMotionPermission();
     if(!granted){
       useMotion = false;
-      setSetupState("fallback", "センサーの許可が得られませんでした。ブラウザまたは端末の設定でモーションセンサーを許可してください。");
+      setSetupState("fallback", "センサーが未許可です。ブラウザ設定を確認してください。");
       return;
     }
 
