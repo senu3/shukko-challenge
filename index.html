@@ -330,7 +330,7 @@
   <div id="topBar">
     <div id="statusPanel" class="panel">
       <div class="stat"><span class="lbl">SPEED</span><span class="val" id="speedVal">0 km/h</span></div>
-      <div class="stat"><span class="lbl">GEAR</span><span class="val" id="gearVal">R</span></div>
+      <div class="stat"><span class="lbl">GEAR</span><span class="val" id="gearVal">R 後退</span></div>
     </div>
     <button id="recalBtn" type="button">⟳ 再キャリブレーション</button>
   </div>
@@ -350,7 +350,7 @@
 
   <div id="debugPanel" class="panel hidden"></div>
 
-  <div id="accelHint">画面タップ長押し = アクセル</div>
+  <div id="accelHint">R 後退｜長押しで進む</div>
   <button id="brakeBtn" type="button" class="panel">BRAKE</button>
   <button id="gearBtn" type="button" data-gear="R" aria-disabled="false" aria-label="シフト R。タップしてDへ切り替え">
     <span class="gear-slot" aria-hidden="true"></span>
@@ -878,10 +878,12 @@
   function syncGearUI(){
     if(!car) return;
     const gear=car.gear>0?"D":"R";
+    const direction=car.gear>0?"前進":"後退";
     const gearBtn=document.getElementById("gearBtn");
-    document.getElementById("gearVal").textContent=gear;
+    document.getElementById("gearVal").textContent=`${gear} ${direction}`;
+    document.getElementById("accelHint").textContent=`${gear} ${direction}｜長押しで進む`;
     gearBtn.dataset.gear=gear;
-    gearBtn.setAttribute("aria-label",`シフト ${gear}。タップして${gear==="D"?"R":"D"}へ切り替え`);
+    gearBtn.setAttribute("aria-label",`シフト ${gear} ${direction}。タップして${gear==="D"?"R 後退":"D 前進"}へ切り替え`);
   }
 
   /* =========================================================
@@ -1127,6 +1129,23 @@
     roundRectPath(-W*0.3, L*0.26, W*0.6, L*0.18, 3);
     ctx.fill();
 
+    // 前後を見分ける灯火。前方(-y)は白、後方(+y)は赤。
+    ctx.fillStyle="#f2d98f";
+    roundRectPath(-W*0.36,-L/2+2,W*0.22,5,2); ctx.fill();
+    roundRectPath( W*0.14,-L/2+2,W*0.22,5,2); ctx.fill();
+    ctx.fillStyle="#d85a50";
+    roundRectPath(-W*0.36,L/2-7,W*0.22,5,2); ctx.fill();
+    roundRectPath( W*0.14,L/2-7,W*0.22,5,2); ctx.fill();
+
+    // ボンネット上の矢印は常に車体前方を指す。
+    ctx.fillStyle="#e8a33d";
+    ctx.beginPath();
+    ctx.moveTo(0,-L*0.48);
+    ctx.lineTo(-W*0.12,-L*0.39);
+    ctx.lineTo(W*0.12,-L*0.39);
+    ctx.closePath();
+    ctx.fill();
+
     // wheels (Ackermann-correct front wheel visual angles)
     const wheelLen = L*0.18, wheelW = W*0.12;
     const halfTrack = W*0.42;
@@ -1149,6 +1168,23 @@
     drawWheel(-halfTrack, axleRear, wheelW, wheelLen, 0);
     drawWheel( halfTrack, axleRear, wheelW, wheelLen, 0);
 
+    ctx.restore();
+
+    // 文字は画面に対して正立させ、旋回中も前後を読み取れるようにする。
+    const forwardX=Math.sin(car.heading), forwardY=-Math.cos(car.heading);
+    const markerOffset=L/2+13;
+    drawCarEndLabel(p.x+forwardX*markerOffset,p.y+forwardY*markerOffset,"前","#e8a33d");
+    drawCarEndLabel(p.x-forwardX*markerOffset,p.y-forwardY*markerOffset,"後","#d85a50");
+  }
+
+  function drawCarEndLabel(x,y,label,color){
+    ctx.save();
+    roundRectPath(x-12,y-9,24,18,5);
+    ctx.fillStyle="rgba(21,23,26,0.92)"; ctx.fill();
+    ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.stroke();
+    ctx.fillStyle=color; ctx.font="bold 11px sans-serif";
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(label,x,y+0.5);
     ctx.restore();
   }
 
