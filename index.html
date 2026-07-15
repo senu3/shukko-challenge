@@ -32,44 +32,140 @@
     background:var(--asphalt-1);
   }
 
-  /* ---------- Start / overlay screen ---------- */
+  /* ---------- Sensor setup / overlay screen ---------- */
   #startScreen{
     position:absolute; inset:0; z-index:50;
-    background:
-      repeating-linear-gradient(0deg, transparent 0 38px, rgba(232,230,223,0.04) 38px 40px),
-      var(--asphalt-2);
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    padding:18px; text-align:center; overflow-y:auto;
+    background:var(--asphalt-2);
+    display:flex; align-items:center; justify-content:center;
+    padding:14px; overflow-y:auto; touch-action:pan-y;
   }
   #startScreen.hidden{ display:none; }
+  .setup-shell{
+    width:min(900px,100%); margin:auto;
+    display:grid; grid-template-columns:minmax(250px,0.8fr) minmax(360px,1.2fr);
+    gap:16px; align-items:stretch;
+  }
+  .setup-brief{ padding:10px 4px; display:flex; flex-direction:column; justify-content:center; }
   .badge{
-    font-family:var(--mono); font-size:11px; letter-spacing:0.18em;
+    align-self:flex-start; font-family:var(--mono); font-size:11px; letter-spacing:0.14em;
     color:var(--signal-amber); border:1px solid var(--signal-amber);
-    padding:3px 10px; border-radius:2px; margin-bottom:10px;
+    padding:3px 9px; border-radius:2px; margin-bottom:10px;
   }
   #startScreen h1{
-    font-size:22px; margin:0 0 4px; font-weight:700; letter-spacing:0.02em;
+    font-size:23px; margin:0 0 5px; font-weight:700; letter-spacing:0.02em;
+    text-wrap:balance;
   }
-  #startScreen .sub{ color:var(--text-dim); font-size:12px; margin-bottom:14px; }
-  .instr-card{
+  #startScreen .sub{
+    color:#b5b8bd; font-size:12px; line-height:1.65; margin:0 0 14px;
+    max-width:44ch; text-wrap:pretty;
+  }
+  .hold-guide{
+    display:flex; align-items:center; gap:12px; color:var(--text-bright);
+    font-size:11px; line-height:1.5;
+  }
+  .phone-demo-wrap{ width:84px; height:54px; flex:0 0 84px; display:grid; place-items:center; }
+  #phoneDemo{
+    width:66px; height:34px; border:2px solid #b7bbc1; border-radius:6px;
+    position:relative; transform:rotate(0deg); transform-origin:center;
+  }
+  #phoneDemo::before{
+    content:""; position:absolute; inset:4px 9px; border:1px solid #555a61; border-radius:2px;
+    background:#202328;
+  }
+  #phoneDemo::after{
+    content:""; position:absolute; width:3px; height:3px; border-radius:50%;
+    background:var(--signal-amber); right:3px; top:50%; transform:translateY(-50%);
+  }
+  .setup-note{
+    margin:12px 0 0; padding-top:10px; border-top:1px solid #34373c;
+    color:#a9adb3; font-size:11px; line-height:1.55;
+  }
+  .diagnostic-panel{
     background:var(--panel-bg); border:1px solid var(--panel-border);
-    border-radius:6px; padding:12px 16px; max-width:520px; width:100%;
-    text-align:left; font-size:12px; line-height:1.55; color:var(--text-bright);
-    margin-bottom:14px;
-    display:grid; grid-template-columns:1fr 1fr; gap:8px 18px;
+    border-radius:10px; padding:14px 16px; min-width:0;
+    display:flex; flex-direction:column; justify-content:center;
   }
-  .instr-card .row{ display:flex; gap:8px; align-items:flex-start; margin-bottom:0; }
-  .instr-key{
-    flex:0 0 auto; font-family:var(--mono); font-size:10px; color:var(--signal-amber);
-    border:1px solid var(--signal-amber); border-radius:3px; padding:2px 6px; white-space:nowrap;
+  .diag-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:9px; }
+  #setupStep{ font-family:var(--mono); font-size:10px; color:#b5b8bd; letter-spacing:0.06em; }
+  #sensorState{
+    display:inline-flex; align-items:center; gap:6px; font-family:var(--mono);
+    font-size:10px; color:#b5b8bd; white-space:nowrap;
   }
+  #sensorState::before{
+    content:""; width:8px; height:8px; border-radius:50%; background:#686d74;
+    box-shadow:0 0 0 2px rgba(104,109,116,0.18);
+  }
+  #sensorState[data-state="working"]::before{ background:var(--signal-amber); box-shadow:0 0 0 2px rgba(232,163,61,0.2); }
+  #sensorState[data-state="good"]::before{ background:var(--signal-green); box-shadow:0 0 0 2px rgba(79,157,110,0.22); }
+  #sensorState[data-state="bad"]::before{ background:var(--signal-red); box-shadow:0 0 0 2px rgba(200,69,58,0.22); }
+  .diag-title{ font-size:17px; margin:0 0 4px; text-wrap:balance; }
+  #setupInstruction{ margin:0 0 12px; min-height:34px; color:#bfc2c7; font-size:12px; line-height:1.5; }
+  .angle-readout{ display:flex; align-items:baseline; justify-content:center; gap:4px; margin:0 0 8px; }
+  #angleValue{ font:700 30px/1 var(--mono); font-variant-numeric:tabular-nums; }
+  .angle-unit{ color:#aeb2b8; font:11px var(--mono); }
+  .angle-meter{ position:relative; height:34px; margin:0 6px 10px; }
+  .angle-track{
+    position:absolute; left:0; right:0; top:14px; height:4px; border-radius:4px; background:#34383e;
+  }
+  .angle-track::before{
+    content:""; position:absolute; left:50%; top:-5px; width:2px; height:14px;
+    transform:translateX(-50%); background:var(--line-white);
+  }
+  .angle-limit{ position:absolute; top:23px; color:#979ba2; font:9px var(--mono); }
+  .angle-limit.left{ left:0; }
+  .angle-limit.center{ left:50%; transform:translateX(-50%); }
+  .angle-limit.right{ right:0; }
+  #angleNeedle{
+    position:absolute; top:6px; left:50%; width:4px; height:20px; border-radius:2px;
+    background:var(--signal-amber); transform:translateX(-50%);
+  }
+  .stability-row{ display:flex; align-items:center; gap:9px; margin:0 0 10px; }
+  .stability-label{ width:58px; color:#aeb2b8; font:10px var(--mono); }
+  .stability-track{ flex:1; height:6px; background:#30343a; border-radius:5px; overflow:hidden; }
+  #stabilityFill{ width:0; height:100%; background:var(--signal-amber); }
+  #stabilityText{ width:70px; text-align:right; color:#bfc2c7; font:10px var(--mono); }
+  .turn-test{ display:flex; gap:8px; margin-bottom:11px; }
+  .turn-check{
+    flex:1; min-width:0; padding:7px 8px; border:1px solid #3d4147; border-radius:5px;
+    color:#aeb2b8; font:10px var(--mono); text-align:center;
+  }
+  .turn-check.done{ border-color:var(--signal-green); color:#a9d5b9; background:rgba(79,157,110,0.1); }
+  .setup-actions{ display:flex; align-items:center; gap:8px; }
   #startBtn{
+    flex:1;
     font-family:var(--sans); font-size:15px; font-weight:700; letter-spacing:0.04em;
     color:#1a1a1a; background:var(--signal-amber); border:none;
-    padding:12px 36px; border-radius:4px; cursor:pointer;
+    min-height:46px; padding:11px 18px; border-radius:5px; cursor:pointer;
   }
   #startBtn:active{ filter:brightness(0.9); }
-  #modeNote{ margin-top:10px; font-size:11px; color:var(--text-dim); font-family:var(--mono); min-height:14px; }
+  #startBtn:disabled{ cursor:wait; color:#868a90; background:#34383e; }
+  #keyboardBtn{
+    display:none; min-height:46px; padding:9px 12px; border:1px solid #555a61;
+    border-radius:5px; background:transparent; color:#d4d6d9; font:11px var(--sans); cursor:pointer;
+  }
+  #keyboardBtn.show{ display:block; }
+  #modeNote{ margin:9px 0 0; font-size:10px; line-height:1.45; color:#b5b8bd; font-family:var(--mono); min-height:14px; }
+
+  @media (max-width:720px) and (orientation:portrait){
+    .setup-shell{ grid-template-columns:1fr; max-width:540px; }
+    .setup-brief{ padding:0; }
+  }
+  @media (max-height:430px) and (orientation:landscape){
+    #startScreen{ align-items:flex-start; padding:8px 12px; }
+    .setup-shell{ gap:10px; }
+    .setup-brief{ padding:4px 0; }
+    #startScreen h1{ font-size:19px; }
+    #startScreen .sub{ margin-bottom:8px; line-height:1.45; }
+    .setup-note{ margin-top:7px; padding-top:7px; }
+    .diagnostic-panel{ padding:10px 13px; }
+    .diag-head{ margin-bottom:5px; }
+    .diag-title{ font-size:15px; }
+    #setupInstruction{ min-height:28px; margin-bottom:7px; }
+    .angle-readout{ margin-bottom:4px; }
+    #angleValue{ font-size:25px; }
+    .angle-meter{ margin-bottom:5px; }
+    .stability-row,.turn-test{ margin-bottom:7px; }
+  }
 
   /* ---------- HUD ---------- */
   #hud{ position:absolute; inset:0; z-index:20; pointer-events:none; }
@@ -94,6 +190,7 @@
   #statusPanel .stat .val{ font-size:15px; }
 
   #recalBtn{
+    border:1px solid var(--panel-border); background:var(--panel-bg); border-radius:6px;
     padding:10px 12px; font-family:var(--mono); font-size:11px; letter-spacing:0.05em;
     color:var(--text-bright); cursor:pointer; white-space:nowrap;
   }
@@ -108,7 +205,7 @@
   #invertBtn{
     position:absolute; bottom:max(14px, env(safe-area-inset-bottom)); left:calc(max(10px, env(safe-area-inset-left)) + 78px);
     width:88px; padding:6px 4px; text-align:center;
-    font-family:var(--mono); font-size:10px; color:var(--text-dim); cursor:pointer;
+    font-family:var(--mono); font-size:10px; color:#aeb2b8; cursor:pointer;
   }
   #invertBtn.active{ color:var(--signal-amber); border-color:var(--signal-amber); }
 
@@ -132,14 +229,33 @@
   #brakeBtn.pressed{ box-shadow:0 1px 0 #5a1f1a; transform:translateX(-50%) translateY(3px); filter:brightness(1.15); }
 
   #gearBtn{
-    position:absolute; bottom:max(22px, calc(env(safe-area-inset-bottom) + 6px)); right:max(16px, calc(env(safe-area-inset-right) + 4px));
-    width:58px; height:58px; border-radius:50%;
-    background:var(--panel-bg); border:2px solid var(--panel-border);
-    color:var(--text-bright); font-weight:700; font-size:18px; font-family:var(--mono);
-    display:flex; align-items:center; justify-content:center;
-    pointer-events:auto;
+    position:absolute; bottom:max(12px, env(safe-area-inset-bottom)); right:max(12px, env(safe-area-inset-right));
+    width:74px; height:106px; border-radius:10px; padding:0;
+    background:#111316; border:2px solid #4a4e55; color:var(--text-bright);
+    font-family:var(--mono); pointer-events:auto; cursor:pointer;
   }
   #gearBtn.locked{ opacity:0.45; }
+  .gear-label{
+    position:absolute; right:10px; font-size:12px; font-weight:700; color:#858a91;
+  }
+  .gear-label.d{ top:14px; }
+  .gear-label.r{ bottom:14px; }
+  .gear-slot{
+    position:absolute; left:18px; top:17px; width:8px; height:72px; border-radius:5px;
+    background:#050607; box-shadow:inset 0 0 0 1px #30343a;
+  }
+  .gear-stick{
+    position:absolute; left:19px; top:25px; width:6px; height:55px;
+    border-radius:4px; background:#747981;
+  }
+  .gear-knob{
+    position:absolute; left:10px; top:14px; width:24px; height:24px; border-radius:50%;
+    background:var(--signal-amber); border:3px solid #4f3512;
+    transform:translateY(52px); transition:transform 0.18s cubic-bezier(.22,1,.36,1);
+  }
+  #gearBtn[data-gear="D"] .gear-knob{ transform:translateY(0); }
+  #gearBtn[data-gear="D"] .gear-label.d,
+  #gearBtn[data-gear="R"] .gear-label.r{ color:var(--signal-amber); }
 
   #accelHint{
     position:absolute; top:max(8px, env(safe-area-inset-top)); left:50%;
@@ -181,6 +297,11 @@
   #rotatePrompt svg{ width:64px; height:64px; margin-bottom:18px; }
   #rotatePrompt h2{ font-size:18px; margin:0 0 8px; }
   #rotatePrompt p{ font-size:13px; color:var(--text-dim); margin:0; max-width:260px; }
+
+  button:focus-visible{ outline:3px solid var(--line-white); outline-offset:3px; }
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{ scroll-behavior:auto!important; transition-duration:0.01ms!important; animation-duration:0.01ms!important; }
+  }
 </style>
 </head>
 <body>
@@ -202,7 +323,7 @@
       <div class="stat"><span class="lbl">SPEED</span><span class="val" id="speedVal">0 km/h</span></div>
       <div class="stat"><span class="lbl">GEAR</span><span class="val" id="gearVal">R</span></div>
     </div>
-    <div id="recalBtn" class="panel">⟳ 再キャリブレーション</div>
+    <button id="recalBtn" type="button">⟳ 再キャリブレーション</button>
   </div>
 
   <div id="wheelWrap">
@@ -216,32 +337,74 @@
       </g>
     </svg>
   </div>
-  <div id="invertBtn" class="panel">操舵反転: OFF</div>
+  <button id="invertBtn" type="button" class="panel" aria-pressed="false">操舵反転: OFF</button>
 
   <div id="debugPanel" class="panel hidden"></div>
 
   <div id="accelHint">画面タップ長押し = アクセル</div>
-  <div id="brakeBtn" class="panel">BRAKE</div>
-  <div id="gearBtn" class="panel">R</div>
+  <button id="brakeBtn" type="button" class="panel">BRAKE</button>
+  <button id="gearBtn" type="button" data-gear="R" aria-disabled="false" aria-label="シフト R。タップしてDへ切り替え">
+    <span class="gear-slot" aria-hidden="true"></span>
+    <span class="gear-stick" aria-hidden="true"></span>
+    <span class="gear-knob" aria-hidden="true"></span>
+    <span class="gear-label d" aria-hidden="true">D</span>
+    <span class="gear-label r" aria-hidden="true">R</span>
+  </button>
 
   <div id="toast"></div>
   <button id="retryBtn">もう一度</button>
 </div>
 
-<div id="startScreen">
-  <div class="badge">PAPER DRIVER TRAINING</div>
-  <h1>出庫チャレンジ</h1>
-  <div class="sub">スマホをハンドルに見立てて、駐車スペースから出てみよう</div>
+<div id="startScreen" role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+  <div class="setup-shell">
+    <section class="setup-brief">
+      <div class="badge">PAPER DRIVER TRAINING</div>
+      <h1 id="setupTitle">出庫チャレンジ</h1>
+      <p class="sub">走り出す前に、スマートフォンの中立位置と左右の入力を確認します。</p>
 
-  <div class="instr-card">
-    <div class="row"><span class="instr-key">回す</span><span>スマホ本体を実際に左右へ回してハンドル操作。ハンドルのように両手で持って回してください。</span></div>
-    <div class="row"><span class="instr-key">長押し</span><span>画面のどこでも長押しでアクセル(現在のギアの方向に進みます)。</span></div>
-    <div class="row"><span class="instr-key">BRAKE</span><span>中央下のボタンでブレーキ。</span></div>
-    <div class="row"><span class="instr-key">D/R</span><span>右下のボタンで前進(D)⇄後退(R)切替。停止中のみ切替できます。</span></div>
+      <div class="hold-guide">
+        <div class="phone-demo-wrap" aria-hidden="true"><div id="phoneDemo"></div></div>
+        <div>画面を顔に向けて横向きにし、ハンドルのように両手で持ってください。</div>
+      </div>
+      <p class="setup-note">走行中：画面長押しでアクセル／中央下でブレーキ／右下のレバーでD・R切替</p>
+    </section>
+
+    <section class="diagnostic-panel" aria-labelledby="setupPanelTitle">
+      <div class="diag-head">
+        <span id="setupStep">準備 1/3</span>
+        <span id="sensorState" data-state="idle"><span id="sensorStateText">未確認</span></span>
+      </div>
+      <h2 id="setupPanelTitle" class="diag-title">センサーを確認します</h2>
+      <p id="setupInstruction">ボタンを押すとセンサー利用の確認が表示されます。スマホを正面で静かに持ってください。</p>
+
+      <div class="angle-readout" aria-label="現在の操舵角">
+        <span id="angleValue">--</span><span class="angle-unit">deg</span>
+      </div>
+      <div class="angle-meter" aria-hidden="true">
+        <div class="angle-track"></div>
+        <span class="angle-limit left">-60</span>
+        <span class="angle-limit center">0</span>
+        <span class="angle-limit right">+60</span>
+        <span id="angleNeedle"></span>
+      </div>
+
+      <div class="stability-row">
+        <span class="stability-label">STABILITY</span>
+        <div class="stability-track"><div id="stabilityFill"></div></div>
+        <span id="stabilityText">待機中</span>
+      </div>
+      <div class="turn-test" aria-label="左右入力テスト">
+        <div id="leftCheck" class="turn-check">○ 左側入力</div>
+        <div id="rightCheck" class="turn-check">○ 右側入力</div>
+      </div>
+
+      <div class="setup-actions">
+        <button id="startBtn" type="button">センサーを確認する</button>
+        <button id="keyboardBtn" type="button">PCキーで開始</button>
+      </div>
+      <div id="modeNote" role="status" aria-live="polite"></div>
+    </section>
   </div>
-
-  <button id="startBtn">スタート(キャリブレーション)</button>
-  <div id="modeNote"></div>
 </div>
 
 <script>
@@ -265,6 +428,14 @@
     coastDecel: 1.1,           // 自然減速(エンジンブレーキ相当)
     brakeDecel: 4.2,           // ブレーキ減速度
     gearSwitchMaxSpeed: 0.25,  // ギア切替を許す最大速度(m/s)
+  };
+
+  const SENSOR_CONFIG = {
+    minSamples: 28,            // 中立位置の判定に使う連続サンプル数
+    maxDeviationDeg: 2.6,      // サンプル群の最大ばらつき。この範囲なら静止とみなす
+    minPlaneGravity: 3.5,      // 画面を寝かせすぎていないかを判定する重力成分(m/s^2)
+    testThresholdDeg: 18,      // 左右入力テストの合格角度
+    sensorTimeoutMs: 6000,     // センサー値が届かない場合の待ち時間
   };
 
   /* =========================================================
@@ -294,6 +465,16 @@
   let baselineAngleDeg = 0;
   let smoothedSteerDeg = 0;
   let invertSteer = false;
+  let motionListenerAttached = false;
+  let sensorEventSeen = false;
+  let sensorPostureOk = false;
+  let sensorPlaneGravity = 0;
+  let setupState = "intro"; // intro | requesting | calibrating | testing | ready | fallback
+  let setupResumeGame = false;
+  let calibrationSamples = [];
+  let calibrationTimer = null;
+  let diagnosticLeftSeen = false;
+  let diagnosticRightSeen = false;
 
   let keyLeft=false, keyRight=false, keyAccel=false, keyBrake=false;
   let pointerAccelCount = 0; // active accelerator touches on background
@@ -314,6 +495,7 @@
     };
     gameState = "playing";
     hideToast();
+    if(document.getElementById("gearBtn")) syncGearUI();
   }
 
   /* =========================================================
@@ -339,10 +521,23 @@
   ========================================================== */
   function onMotion(e){
     const acc = e.accelerationIncludingGravity;
-    if(!acc || acc.x===null || acc.x===undefined) return;
+    if(!acc || !Number.isFinite(acc.x) || !Number.isFinite(acc.y)) return;
+    sensorEventSeen = true;
+    sensorPlaneGravity = Math.hypot(acc.x, acc.y);
+    sensorPostureOk = sensorPlaneGravity >= SENSOR_CONFIG.minPlaneGravity;
+
+    if(!sensorPostureOk){
+      if(setupState === "calibrating") calibrationSamples = [];
+      renderSetupDiagnostics();
+      return;
+    }
+
     // 画面平面内での重力ベクトルの向き = スマホの回転(ロール)角
-    let ang = Math.atan2(acc.x, acc.y) * 180/Math.PI;
-    rawAngleDeg = ang;
+    rawAngleDeg = Math.atan2(acc.x, acc.y) * 180/Math.PI;
+
+    if(setupState === "calibrating") collectCalibrationSample(rawAngleDeg);
+    if(setupState === "testing") updateTurnTest();
+    renderSetupDiagnostics();
   }
 
   function angleDiff(a,b){
@@ -352,12 +547,200 @@
     return d;
   }
 
-  function calibrate(){
-    if(rawAngleDeg!==null){
-      baselineAngleDeg = rawAngleDeg;
+  function circularMeanDeg(values){
+    let sx=0, sy=0;
+    for(const value of values){
+      const rad=value*Math.PI/180;
+      sx+=Math.sin(rad); sy+=Math.cos(rad);
     }
+    return Math.atan2(sx/values.length, sy/values.length)*180/Math.PI;
+  }
+
+  function collectCalibrationSample(angle){
+    calibrationSamples.push(angle);
+    if(calibrationSamples.length > SENSOR_CONFIG.minSamples){
+      calibrationSamples.shift();
+    }
+    if(calibrationSamples.length < SENSOR_CONFIG.minSamples) return;
+
+    const mean = circularMeanDeg(calibrationSamples);
+    const maxDeviation = Math.max(...calibrationSamples.map(value=>Math.abs(angleDiff(value,mean))));
+    if(maxDeviation > SENSOR_CONFIG.maxDeviationDeg) return;
+
+    baselineAngleDeg = mean;
     smoothedSteerDeg = 0;
-    flashToast("キャリブレーション完了", "good", 700);
+    diagnosticLeftSeen = false;
+    diagnosticRightSeen = false;
+    clearCalibrationTimer();
+    setSetupState("testing");
+  }
+
+  function updateTurnTest(){
+    if(rawAngleDeg===null) return;
+    const relative = angleDiff(rawAngleDeg, baselineAngleDeg);
+    if(relative <= -SENSOR_CONFIG.testThresholdDeg) diagnosticLeftSeen = true;
+    if(relative >=  SENSOR_CONFIG.testThresholdDeg) diagnosticRightSeen = true;
+    document.getElementById("leftCheck").classList.toggle("done", diagnosticLeftSeen);
+    document.getElementById("rightCheck").classList.toggle("done", diagnosticRightSeen);
+    document.getElementById("leftCheck").textContent = (diagnosticLeftSeen?"✓":"○") + " 左側入力";
+    document.getElementById("rightCheck").textContent = (diagnosticRightSeen?"✓":"○") + " 右側入力";
+    if(diagnosticLeftSeen && diagnosticRightSeen) setSetupState("ready");
+  }
+
+  function clearCalibrationTimer(){
+    if(calibrationTimer){ clearTimeout(calibrationTimer); calibrationTimer=null; }
+  }
+
+  function attachMotionListener(){
+    if(motionListenerAttached) return;
+    window.addEventListener("devicemotion", onMotion);
+    motionListenerAttached = true;
+  }
+
+  function beginCalibration(returnToGame){
+    setupResumeGame = !!returnToGame;
+    calibrationSamples = [];
+    sensorEventSeen = false;
+    diagnosticLeftSeen = false;
+    diagnosticRightSeen = false;
+    rawAngleDeg = null;
+    sensorPostureOk = false;
+    document.getElementById("leftCheck").classList.remove("done");
+    document.getElementById("rightCheck").classList.remove("done");
+    document.getElementById("leftCheck").textContent = "○ 左側入力";
+    document.getElementById("rightCheck").textContent = "○ 右側入力";
+    document.getElementById("startScreen").classList.remove("hidden");
+    document.getElementById("startScreen").setAttribute("aria-hidden","false");
+    document.getElementById("startScreen").scrollTop=0;
+    document.getElementById("hud").classList.add("hidden");
+    setSetupState("calibrating");
+    clearCalibrationTimer();
+    calibrationTimer=setTimeout(()=>{
+      if(setupState === "calibrating"){
+        useMotion=false;
+        const detail=sensorEventSeen
+          ? "端末の画面が水平に近いか、動きが大きいため中立点を確定できませんでした。画面を顔に向けて静かに持ち、もう一度お試しください。"
+          : "センサー値を受信できませんでした。HTTPSで開いているか、ブラウザのセンサー許可を確認してください。";
+        setSetupState("fallback", detail);
+      }
+    }, SENSOR_CONFIG.sensorTimeoutMs);
+  }
+
+  function renderSetupDiagnostics(){
+    const angleValue=document.getElementById("angleValue");
+    const needle=document.getElementById("angleNeedle");
+    const phone=document.getElementById("phoneDemo");
+    const fill=document.getElementById("stabilityFill");
+    const stabilityText=document.getElementById("stabilityText");
+    if(!angleValue || !needle || !phone) return;
+
+    let relative=null;
+    if(rawAngleDeg!==null){
+      if(setupState === "calibrating" && calibrationSamples.length){
+        relative=angleDiff(rawAngleDeg, calibrationSamples[0]);
+      }else if(setupState === "testing" || setupState === "ready"){
+        relative=angleDiff(rawAngleDeg, baselineAngleDeg);
+      }
+    }
+    const displayAngle=relative===null?0:Math.max(-60,Math.min(60,relative));
+    angleValue.textContent=relative===null?"--":`${relative>=0?"+":""}${Math.round(relative)}`;
+    needle.style.left=`${((displayAngle+60)/120)*100}%`;
+    phone.style.transform=`rotate(${Math.max(-42,Math.min(42,displayAngle))}deg)`;
+
+    if(setupState === "calibrating"){
+      fill.style.background="var(--signal-amber)";
+      if(!sensorPostureOk){
+        fill.style.width="0%";
+        stabilityText.textContent=sensorPlaneGravity>0?"端末を立てる":"受信待ち";
+      }else{
+        const sampleRatio=Math.min(1,calibrationSamples.length/SENSOR_CONFIG.minSamples);
+        let quality=1;
+        if(calibrationSamples.length>2){
+          const mean=circularMeanDeg(calibrationSamples);
+          const deviation=Math.max(...calibrationSamples.map(value=>Math.abs(angleDiff(value,mean))));
+          quality=Math.max(0.08,Math.min(1,SENSOR_CONFIG.maxDeviationDeg/Math.max(deviation,0.1)));
+        }
+        fill.style.width=`${Math.round(sampleRatio*quality*100)}%`;
+        stabilityText.textContent=quality<0.7?"静止する":`${calibrationSamples.length}/${SENSOR_CONFIG.minSamples}`;
+      }
+    }else if(setupState === "testing" || setupState === "ready"){
+      fill.style.width="100%";
+      fill.style.background="var(--signal-green)";
+      stabilityText.textContent="固定済み";
+    }else{
+      fill.style.width="0%";
+      fill.style.background="var(--signal-amber)";
+      stabilityText.textContent="待機中";
+    }
+
+    if(setupState === "ready"){
+      const centered=relative!==null && Math.abs(relative)<=8;
+      const primary=document.getElementById("startBtn");
+      const title=document.getElementById("setupPanelTitle");
+      const instruction=document.getElementById("setupInstruction");
+      const sensor=document.getElementById("sensorState");
+      const sensorText=document.getElementById("sensorStateText");
+      primary.disabled=!centered;
+      primary.textContent=centered?(setupResumeGame?"走行に戻る":"練習を始める"):"中立位置へ戻してください";
+      title.textContent=centered?"準備できました":"スマホを正面へ戻してください";
+      instruction.textContent=centered
+        ? "中立点と左右入力を確認できました。この位置を保ったまま開始してください。"
+        : "左右の確認は完了しました。角度表示が0°付近になるまでゆっくり戻してください。";
+      sensor.dataset.state=centered?"good":"working";
+      sensorText.textContent=centered?"入力 正常":"中立へ戻す";
+    }
+  }
+
+  function setSetupState(state, detail){
+    setupState=state;
+    const step=document.getElementById("setupStep");
+    const sensor=document.getElementById("sensorState");
+    const sensorText=document.getElementById("sensorStateText");
+    const title=document.getElementById("setupPanelTitle");
+    const instruction=document.getElementById("setupInstruction");
+    const primary=document.getElementById("startBtn");
+    const keyboard=document.getElementById("keyboardBtn");
+    const note=document.getElementById("modeNote");
+    if(!primary) return;
+    primary.disabled=false;
+    keyboard.classList.remove("show");
+    note.textContent="";
+
+    if(state==="intro"){
+      step.textContent="準備 1/3"; sensor.dataset.state="idle"; sensorText.textContent="未確認";
+      title.textContent="センサーを確認します";
+      instruction.textContent="ボタンを押すとセンサー利用の確認が表示されます。スマホを正面で静かに持ってください。";
+      primary.textContent="センサーを確認する"; primary.dataset.action="request";
+    }else if(state==="requesting"){
+      step.textContent="準備 1/3"; sensor.dataset.state="working"; sensorText.textContent="許可を確認中";
+      title.textContent="センサーの許可を確認中";
+      instruction.textContent="ブラウザの確認が表示された場合は、センサーの利用を許可してください。";
+      primary.textContent="確認中…"; primary.disabled=true;
+    }else if(state==="calibrating"){
+      step.textContent="準備 1/3"; sensor.dataset.state="working"; sensorText.textContent="測定中";
+      title.textContent="中立位置を測定しています";
+      instruction.textContent="画面を顔に向け、正面で動かさずに持ってください。安定すると自動で確定します。";
+      primary.textContent="静止してお待ちください"; primary.disabled=true;
+    }else if(state==="testing"){
+      step.textContent="準備 2/3"; sensor.dataset.state="good"; sensorText.textContent="中立点 固定済み";
+      title.textContent="左右の入力を確認します";
+      instruction.textContent="中立位置からスマホを左側・右側へ、それぞれ約20°ゆっくり回してください。";
+      primary.textContent="左右に回してください"; primary.disabled=true;
+    }else if(state==="ready"){
+      step.textContent="準備 3/3"; sensor.dataset.state="good"; sensorText.textContent="入力 正常";
+      title.textContent="準備できました";
+      instruction.textContent="中立点と左右入力を確認できました。スマホを正面へ戻してから開始してください。";
+      primary.textContent=setupResumeGame?"走行に戻る":"練習を始める"; primary.dataset.action="start";
+      note.textContent="走行中も右上のボタンから再キャリブレーションできます。";
+    }else if(state==="fallback"){
+      step.textContent="センサー確認"; sensor.dataset.state="bad"; sensorText.textContent="利用できません";
+      title.textContent="センサーを確認できませんでした";
+      instruction.textContent=detail||"センサーの許可が得られませんでした。ブラウザ設定を確認して、もう一度お試しください。";
+      primary.textContent="もう一度確認する"; primary.dataset.action="request";
+      keyboard.classList.add("show");
+      note.textContent="PCでは矢印キーで動作確認できます。スマートフォンではセンサーを許可してください。";
+    }
+    renderSetupDiagnostics();
   }
 
   async function requestMotionPermission(){
@@ -406,7 +789,7 @@
     brake.addEventListener("pointerleave", (e)=>{ keyBrakeBtn=false; brake.classList.remove("pressed"); });
 
     const gearBtn = document.getElementById("gearBtn");
-    gearBtn.addEventListener("pointerdown", (e)=>{
+    gearBtn.addEventListener("click", (e)=>{
       e.stopPropagation();
       if(!car) return;
       if(Math.abs(car.speed) > CONFIG.gearSwitchMaxSpeed){
@@ -414,27 +797,53 @@
         return;
       }
       car.gear *= -1;
-      document.getElementById("gearVal").textContent = car.gear>0 ? "D" : "R";
-      gearBtn.textContent = car.gear>0 ? "D" : "R";
+      syncGearUI();
     });
 
-    document.getElementById("recalBtn").addEventListener("pointerdown", (e)=>{ e.stopPropagation(); calibrate(); });
+    document.getElementById("recalBtn").addEventListener("click", (e)=>{
+      e.stopPropagation();
+      if(useMotion && motionListenerAttached){
+        car.speed=0;
+        beginCalibration(true);
+      }else{
+        flashToast("センサー使用時のみ再設定できます", "bad", 1000);
+      }
+    });
     const invBtn = document.getElementById("invertBtn");
-    invBtn.addEventListener("pointerdown", (e)=>{
+    invBtn.addEventListener("click", (e)=>{
       e.stopPropagation();
       invertSteer = !invertSteer;
       invBtn.textContent = "操舵反転: " + (invertSteer?"ON":"OFF");
       invBtn.classList.toggle("active", invertSteer);
+      invBtn.setAttribute("aria-pressed", String(invertSteer));
     });
 
-    document.getElementById("retryBtn").addEventListener("pointerdown", (e)=>{
+    document.getElementById("retryBtn").addEventListener("click", (e)=>{
       e.stopPropagation();
       resetCar();
       document.getElementById("retryBtn").classList.remove("show");
     });
+
+    window.addEventListener("blur", resetPressedInputs);
+    document.addEventListener("visibilitychange", ()=>{ if(document.hidden) resetPressedInputs(); });
   }
   function safeCapture(el,id){ try{ el.setPointerCapture(id); }catch(e){} }
   let keyBrakeBtn = false;
+
+  function resetPressedInputs(){
+    pointerAccelCount=0;
+    keyAccel=false; keyBrake=false; keyBrakeBtn=false;
+    document.getElementById("brakeBtn").classList.remove("pressed");
+  }
+
+  function syncGearUI(){
+    if(!car) return;
+    const gear=car.gear>0?"D":"R";
+    const gearBtn=document.getElementById("gearBtn");
+    document.getElementById("gearVal").textContent=gear;
+    gearBtn.dataset.gear=gear;
+    gearBtn.setAttribute("aria-label",`シフト ${gear}。タップして${gear==="D"?"R":"D"}へ切り替え`);
+  }
 
   /* =========================================================
      PHYSICS UPDATE
@@ -558,7 +967,12 @@
     document.getElementById("speedVal").textContent = Math.round(Math.abs(car.speed)*3.6) + " km/h";
     const rotor = document.getElementById("wheelRotor");
     rotor.setAttribute("transform", `rotate(${smoothedSteerDeg*1.4} 50 50)`);
-    document.getElementById("gearBtn").classList.toggle("locked", Math.abs(car.speed) > CONFIG.gearSwitchMaxSpeed);
+    const gearControl=document.getElementById("gearBtn");
+    const gearLocked=Math.abs(car.speed) > CONFIG.gearSwitchMaxSpeed;
+    if(gearControl.classList.contains("locked")!==gearLocked){
+      gearControl.classList.toggle("locked", gearLocked);
+      gearControl.setAttribute("aria-disabled", String(gearLocked));
+    }
 
     if(debugVisible){
       document.getElementById("debugPanel").innerHTML =
@@ -765,7 +1179,9 @@
     setupPointerInputs();
     resetCar();
 
-    document.getElementById("startBtn").addEventListener("click", onStart);
+    document.getElementById("startBtn").addEventListener("click", handleSetupPrimary);
+    document.getElementById("keyboardBtn").addEventListener("click", startKeyboardFallback);
+    setSetupState("intro");
 
     // デバッグ表示: 画面を3本指タップ、またはキーボード'd'で切替(開発確認用)
     window.addEventListener("keydown", (e)=>{
@@ -778,30 +1194,53 @@
     requestAnimationFrame(loop);
   }
 
-  async function onStart(){
-    const modeNote = document.getElementById("modeNote");
-    const hasMotionAPI = (typeof DeviceMotionEvent !== "undefined");
+  async function handleSetupPrimary(){
+    const action=document.getElementById("startBtn").dataset.action;
+    if(action==="start"){
+      enterGame();
+      return;
+    }
+    if(action!=="request") return;
 
-    if(hasMotionAPI){
-      const granted = await requestMotionPermission();
-      if(granted){
-        window.addEventListener("devicemotion", onMotion);
-        useMotion = true;
-        // 数フレーム待ってベースラインを取得
-        setTimeout(()=>{
-          calibrate();
-        }, 200);
-      } else {
-        useMotion = false;
-        modeNote.textContent = "センサーの許可が得られませんでした。矢印キー操作(PC)で続行します。";
-      }
-    } else {
+    clearCalibrationTimer();
+    setSetupState("requesting");
+    const hasMotionAPI = (typeof DeviceMotionEvent !== "undefined");
+    if(!hasMotionAPI){
       useMotion = false;
-      modeNote.textContent = "センサー未対応の環境です。矢印キー(←→)で操作してください。";
+      setSetupState("fallback", "このブラウザはモーションセンサーに対応していません。対応するスマートフォンのブラウザで開いてください。");
+      return;
     }
 
+    const granted = await requestMotionPermission();
+    if(!granted){
+      useMotion = false;
+      setSetupState("fallback", "センサーの許可が得られませんでした。ブラウザまたは端末の設定でモーションセンサーを許可してください。");
+      return;
+    }
+
+    attachMotionListener();
+    useMotion = true;
+    beginCalibration(setupResumeGame);
+  }
+
+  function startKeyboardFallback(){
+    clearCalibrationTimer();
+    useMotion=false;
+    rawAngleDeg=null;
+    setupResumeGame=false;
+    enterGame();
+    flashToast("キーボード操作モード", "good", 900);
+  }
+
+  function enterGame(){
+    clearCalibrationTimer();
+    smoothedSteerDeg=0;
+    resetPressedInputs();
     document.getElementById("startScreen").classList.add("hidden");
+    document.getElementById("startScreen").setAttribute("aria-hidden","true");
     document.getElementById("hud").classList.remove("hidden");
+    syncGearUI();
+    setupResumeGame=false;
   }
 
   init();
