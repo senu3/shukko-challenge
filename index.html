@@ -272,6 +272,32 @@
     font-family:var(--mono); letter-spacing:0.05em; pointer-events:none;
     text-align:center; width:200px;
   }
+  #accelHint.hidden{ display:none; }
+
+  #lessonPanel{
+    position:absolute; top:max(8px, env(safe-area-inset-top)); left:50%;
+    transform:translateX(-50%); width:min(300px, calc(100vw - 220px));
+    min-width:238px; padding:7px 10px 8px; border-color:#625033;
+    pointer-events:none;
+  }
+  #lessonPanel.hidden{ display:none; }
+  .lesson-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  #lessonCount{ color:var(--signal-amber); font:700 10px var(--mono); letter-spacing:0.06em; }
+  .lesson-progress{ display:flex; gap:4px; width:74px; }
+  .lesson-progress span{ flex:1; height:3px; border-radius:3px; background:#464a50; }
+  .lesson-progress span.done{ background:var(--signal-green); }
+  .lesson-progress span.current{ background:var(--signal-amber); }
+  #lessonTitle{ display:block; margin:3px 0 1px; font-size:14px; line-height:1.25; }
+  #lessonInstruction{ margin:0; color:#c4c7cb; font-size:11px; line-height:1.35; }
+
+  #lessonNextBtn{
+    position:absolute; top:57%; left:50%; transform:translate(-50%,0);
+    min-width:144px; min-height:44px; padding:10px 20px; border:1px solid #654a20;
+    border-radius:5px; background:var(--signal-amber); color:#1a1a1a;
+    font:700 13px var(--sans); opacity:0; pointer-events:none;
+    transition:opacity 0.15s ease;
+  }
+  #lessonNextBtn.show{ opacity:1; pointer-events:auto; }
 
   #toast{
     position:absolute; top:42%; left:50%; transform:translate(-50%,-50%);
@@ -311,6 +337,10 @@
   @media (prefers-reduced-motion:reduce){
     *,*::before,*::after{ scroll-behavior:auto!important; transition-duration:0.01ms!important; animation-duration:0.01ms!important; }
   }
+  @media (max-width:720px){
+    #lessonPanel{ width:240px; min-width:0; }
+    #lessonInstruction{ font-size:10px; }
+  }
 </style>
 </head>
 <body>
@@ -330,7 +360,7 @@
   <div id="topBar">
     <div id="statusPanel" class="panel">
       <div class="stat"><span class="lbl">SPEED</span><span class="val" id="speedVal">0 km/h</span></div>
-      <div class="stat"><span class="lbl">GEAR</span><span class="val" id="gearVal">R 後退</span></div>
+      <div class="stat"><span class="lbl">GEAR</span><span class="val" id="gearVal">D 前進</span></div>
     </div>
     <button id="recalBtn" type="button">⟳ 再キャリブレーション</button>
   </div>
@@ -350,9 +380,17 @@
 
   <div id="debugPanel" class="panel hidden"></div>
 
-  <div id="accelHint">R 後退｜長押しで進む</div>
+  <div id="accelHint">D 前進｜長押しで進む</div>
+  <section id="lessonPanel" class="panel hidden" aria-live="polite">
+    <div class="lesson-head">
+      <span id="lessonCount">ミニ教習 1/3</span>
+      <span class="lesson-progress" aria-hidden="true"><span></span><span></span><span></span></span>
+    </div>
+    <strong id="lessonTitle">前進と停止</strong>
+    <p id="lessonInstruction">長押しで前進</p>
+  </section>
   <button id="brakeBtn" type="button" class="panel">BRAKE</button>
-  <button id="gearBtn" type="button" data-gear="R" aria-disabled="false" aria-label="シフト R。タップしてDへ切り替え">
+  <button id="gearBtn" type="button" data-gear="D" aria-disabled="false" aria-label="シフト D 前進。タップしてR 後退へ切り替え">
     <span class="gear-slot" aria-hidden="true"></span>
     <span class="gear-stick" aria-hidden="true"></span>
     <span class="gear-knob" aria-hidden="true"></span>
@@ -361,6 +399,7 @@
   </button>
 
   <div id="toast"></div>
+  <button id="lessonNextBtn" type="button" hidden>次の教習</button>
   <button id="retryBtn">もう一度</button>
 </div>
 
@@ -458,7 +497,7 @@
   };
 
   /* =========================================================
-     STAGE DEFINITION (出庫シーン) - ワールド座標(メートル, y下方向が前方)
+     SCENES - ワールド座標(メートル, 画面下が+y)
   ========================================================== */
   const STAGE = {
     // 駐車スロット: 車の初期位置の左右に壁(隣の車を表す)
@@ -466,11 +505,27 @@
       { x:-5.6, y:-1.0, w:3.6, h:10.0 },  // 左側の隣接車両ブロック
       { x: 2.0, y:-1.0, w:3.6, h:10.0 },  // 右側の隣接車両ブロック
     ],
-    startPos:   { x:0, y:2.0, heading: Math.PI }, // 鼻先(フロントガラス側)は画面下を向く。ギアR(後退)でお尻側が先導し、画面上=ゴール方向へ進む。
-    goal: { x:-3.2, y:-8.0, w:8.4, h:4.0 },        // 通路(画面奥)に出てまっすぐ並んだらクリア
-    goalHeadingTargetDeg: 180, // 出庫はバック(R)で行うため、車の前方は画面下を向いたまま通路に出る想定 → heading≈180度を期待
+    startPos: { x:0, y:2.0, heading:0 }, // フロントを画面上へ向け、Dで通路へ出る。
+    startGear: 1,
+    goal: { x:-3.2, y:-8.0, w:8.4, h:4.0 },
+    goalHeadingTargetDeg: 0,
     worldBounds: { x:-9, y:-14, w:18, h:20 },
   };
+
+  const LESSONS = [
+    {
+      id:"stop", title:"前進して止まる", startPos:{x:0,y:2.5,heading:0}, startGear:1,
+      goal:{x:-1.5,y:-3.2,w:3,h:3.0}, goalLabel:"STOP", fixedGear:true,
+    },
+    {
+      id:"forwardTurn", title:"前進で右へ曲がる", startPos:{x:0,y:2.5,heading:0}, startGear:1,
+      goal:{x:1.8,y:-2.7,w:3.2,h:3.2}, goalLabel:"右へ", fixedGear:true,
+    },
+    {
+      id:"reverseTurn", title:"バックで右へ曲がる", startPos:{x:0,y:-2.0,heading:0}, startGear:1,
+      goal:{x:1.8,y:1.5,w:3.2,h:3.2}, goalLabel:"後ろへ", fixedGear:false,
+    },
+  ];
 
   /* =========================================================
      STATE
@@ -498,21 +553,33 @@
   let pointerAccelCount = 0; // active accelerator touches on background
 
   let car = null;
-  let gameState = "playing"; // playing | crashed | cleared
+  let gameState = "playing"; // playing | lessonComplete | crashed | cleared
+  let activityMode = "challenge"; // lesson | challenge
+  let lessonIndex = 0;
+  let lessonSteerPeak = 0;
+  let lessonGearChanged = false;
+  let trainingStarted = false;
   let debugVisible = false;
   let lastTime = null;
 
   function resetCar(){
+    const scene=activityMode==="lesson"?LESSONS[lessonIndex]:STAGE;
     car = {
-      x: STAGE.startPos.x,
-      y: STAGE.startPos.y,
-      heading: STAGE.startPos.heading,
+      x: scene.startPos.x,
+      y: scene.startPos.y,
+      heading: scene.startPos.heading,
       speed: 0,
       steerAngle: 0, // 実際の前輪角(ラジアン, 平滑化後の物理量)
-      gear: -1, // -1 = R (出庫はまずバックから), 1 = D
+      gear: scene.startGear,
     };
+    lessonSteerPeak=0;
+    lessonGearChanged=false;
+    smoothedSteerDeg=0;
     gameState = "playing";
     hideToast();
+    const lessonNext=document.getElementById("lessonNextBtn");
+    if(lessonNext){ lessonNext.hidden=true; lessonNext.classList.remove("show"); }
+    document.getElementById("retryBtn")?.classList.remove("show");
     if(document.getElementById("gearBtn")) syncGearUI();
   }
 
@@ -769,7 +836,7 @@
       step.textContent="確認完了"; sensor.dataset.state="good"; sensorText.textContent="入力 正常";
       title.textContent="準備OK";
       instruction.textContent="そのままスタート";
-      primary.textContent=setupResumeGame?"走行に戻る":"練習を始める"; primary.dataset.action="start";
+      primary.textContent=setupResumeGame?"走行に戻る":"ミニ教習へ"; primary.dataset.action="start";
       note.textContent="右上で再調整";
     }else if(state==="fallback"){
       step.textContent="センサー確認"; sensor.dataset.state="bad"; sensorText.textContent="利用できません";
@@ -831,11 +898,17 @@
     gearBtn.addEventListener("click", (e)=>{
       e.stopPropagation();
       if(!car) return;
+      const lesson=activityMode==="lesson"?LESSONS[lessonIndex]:null;
+      if(lesson?.fixedGear){
+        flashToast("この教習はDのまま", "bad", 700);
+        return;
+      }
       if(Math.abs(car.speed) > CONFIG.gearSwitchMaxSpeed){
         flashToast("停止して切替", "bad", 800);
         return;
       }
       car.gear *= -1;
+      if(activityMode==="lesson") lessonGearChanged=true;
       syncGearUI();
     });
 
@@ -863,6 +936,13 @@
       document.getElementById("retryBtn").classList.remove("show");
     });
 
+    document.getElementById("lessonNextBtn").addEventListener("click", (e)=>{
+      e.stopPropagation();
+      if(gameState!=="lessonComplete") return;
+      if(lessonIndex<LESSONS.length-1) startLesson(lessonIndex+1);
+      else startChallenge();
+    });
+
     window.addEventListener("blur", resetPressedInputs);
     document.addEventListener("visibilitychange", ()=>{ if(document.hidden) resetPressedInputs(); });
   }
@@ -884,6 +964,71 @@
     document.getElementById("accelHint").textContent=`${gear} ${direction}｜長押しで進む`;
     gearBtn.dataset.gear=gear;
     gearBtn.setAttribute("aria-label",`シフト ${gear} ${direction}。タップして${gear==="D"?"R 後退":"D 前進"}へ切り替え`);
+  }
+
+  /* =========================================================
+     MINI LESSONS
+  ========================================================== */
+  function startLesson(index){
+    activityMode="lesson";
+    lessonIndex=Math.max(0,Math.min(LESSONS.length-1,index));
+    trainingStarted=true;
+    document.getElementById("lessonPanel").classList.remove("hidden");
+    document.getElementById("accelHint").classList.add("hidden");
+    resetCar();
+    updateLessonPanel();
+  }
+
+  function startChallenge(){
+    activityMode="challenge";
+    trainingStarted=true;
+    document.getElementById("lessonPanel").classList.add("hidden");
+    document.getElementById("accelHint").classList.remove("hidden");
+    resetCar();
+    flashToast("出庫チャレンジ", "good", 900);
+  }
+
+  function updateLessonPanel(){
+    if(activityMode!=="lesson") return;
+    const lesson=LESSONS[lessonIndex];
+    document.getElementById("lessonCount").textContent=`ミニ教習 ${lessonIndex+1}/${LESSONS.length}`;
+    document.getElementById("lessonTitle").textContent=lesson.title;
+    let instruction="";
+    if(lesson.id==="stop"){
+      instruction=car.y<=lesson.goal.y+lesson.goal.h?"BRAKEで止まる":"長押しでSTOPへ";
+    }else if(lesson.id==="forwardTurn"){
+      instruction=lessonSteerPeak<12?"スマホを右へ回す":"そのまま長押し";
+    }else{
+      instruction=car.gear>0?"シフトをRへ":lessonSteerPeak<12?"スマホを右へ回す":"長押しでバック";
+    }
+    document.getElementById("lessonInstruction").textContent=instruction;
+    document.querySelectorAll(".lesson-progress span").forEach((item,index)=>{
+      item.classList.toggle("done",index<lessonIndex || gameState==="lessonComplete" && index===lessonIndex);
+      item.classList.toggle("current",index===lessonIndex && gameState!=="lessonComplete");
+    });
+  }
+
+  function pointInRect(x,y,rect){
+    return x>rect.x && x<rect.x+rect.w && y>rect.y && y<rect.y+rect.h;
+  }
+
+  function checkLessonGoal(){
+    const lesson=LESSONS[lessonIndex];
+    if(lesson.id==="stop") return car.y<=lesson.goal.y+lesson.goal.h && Math.abs(car.speed)<0.25;
+    if(lesson.id==="forwardTurn") return car.x>=lesson.goal.x && car.y<=lesson.goal.y+lesson.goal.h && lessonSteerPeak>=10;
+    return car.x>=lesson.goal.x && car.y>=lesson.goal.y && car.gear<0 && lessonGearChanged && lessonSteerPeak>=10;
+  }
+
+  function completeLesson(){
+    car.speed=0;
+    gameState="lessonComplete";
+    resetPressedInputs();
+    updateLessonPanel();
+    flashToast(lessonIndex===LESSONS.length-1?"3つクリア！":"できました！", "good", 99999);
+    const next=document.getElementById("lessonNextBtn");
+    next.textContent=lessonIndex===LESSONS.length-1?"出庫に挑戦":"次の教習";
+    next.hidden=false;
+    next.classList.add("show");
   }
 
   /* =========================================================
@@ -945,8 +1090,7 @@
 
   function checkGoal(){
     const g=STAGE.goal;
-    const inside = car.x > g.x && car.x < g.x+g.w && car.y > g.y && car.y < g.y+g.h;
-    if(!inside) return false;
+    if(!pointInRect(car.x,car.y,g)) return false;
     // ゴール領域内で、車体がレーンに対しほぼ平行(まっすぐ出られた)かを確認。
     // バック(R)のまま出てきても、切り返して前進(D)で出てきても、
     // どちらの向きでもまっすぐであればクリアとする。
@@ -959,6 +1103,7 @@
   function update(dt){
     if(!car) return;
     updateSteeringInput(dt);
+    if(activityMode==="lesson") lessonSteerPeak=Math.max(lessonSteerPeak,smoothedSteerDeg);
 
     const steerTargetRad = (smoothedSteerDeg/CONFIG.steerInputMaxDeg) * (CONFIG.maxSteerDeg*Math.PI/180);
     car.steerAngle = steerTargetRad;
@@ -992,24 +1137,29 @@
       car.heading += (car.speed/L)*Math.tan(car.steerAngle)*dt;
 
       const poly = rectCorners(car.x,car.y,CONFIG.carWidth,CONFIG.carLength,car.heading);
-      if(checkCollision(poly)){
+      if(activityMode==="challenge" && checkCollision(poly)){
         car.x=prevX; car.y=prevY; car.heading=prevH; car.speed=0;
         gameState="crashed";
         flashToast("接触しました", "bad", 99999);
         document.getElementById("retryBtn").classList.add("show");
-      } else if(checkGoal()){
+      }else if(activityMode==="challenge" && checkGoal()){
         gameState="cleared";
         flashToast("出庫成功！", "good", 99999);
         document.getElementById("retryBtn").classList.add("show");
+      }else if(activityMode==="lesson" && checkLessonGoal()){
+        completeLesson();
       }
     }
+
+    if(activityMode==="lesson") updateLessonPanel();
 
     // HUD更新
     document.getElementById("speedVal").textContent = Math.round(Math.abs(car.speed)*3.6) + " km/h";
     const rotor = document.getElementById("wheelRotor");
     rotor.setAttribute("transform", `rotate(${smoothedSteerDeg*1.4} 50 50)`);
     const gearControl=document.getElementById("gearBtn");
-    const gearLocked=Math.abs(car.speed) > CONFIG.gearSwitchMaxSpeed;
+    const gearFixed=activityMode==="lesson" && LESSONS[lessonIndex].fixedGear;
+    const gearLocked=gearFixed || Math.abs(car.speed) > CONFIG.gearSwitchMaxSpeed;
     if(gearControl.classList.contains("locked")!==gearLocked){
       gearControl.classList.toggle("locked", gearLocked);
       gearControl.setAttribute("aria-disabled", String(gearLocked));
@@ -1023,6 +1173,7 @@
         `spd: ${car.speed.toFixed(2)} m/s<br>`+
         `gear: ${car.gear>0?"D":"R"}<br>`+
         `pos: ${car.x.toFixed(1)}, ${car.y.toFixed(1)}<br>`+
+        `mode: ${activityMode}${activityMode==="lesson"?` ${lessonIndex+1}`:""}<br>`+
         `state: ${gameState}<br>`+
         `motion: ${useMotion}`;
     }
@@ -1059,19 +1210,22 @@
     }
     ctx.restore();
 
-    // parking slot boundary lines (white)
-    ctx.strokeStyle = "#e8e6df";
-    ctx.lineWidth = 3;
-    const slot = { x:-1.6, y:-1.2, w:3.2, h:6.8 };
-    drawWorldRectStroke(slot);
+    if(activityMode==="lesson"){
+      drawLessonScene();
+    }else{
+      // parking slot boundary lines (white)
+      ctx.strokeStyle = "#e8e6df";
+      ctx.lineWidth = 3;
+      const slot = { x:-1.6, y:-1.2, w:3.2, h:6.8 };
+      drawWorldRectStroke(slot);
 
-    // walls (隣接車両ブロック)
-    for(const wdef of STAGE.walls){
-      drawWorldRect(wdef, "#15171a", "#3a3d42");
+      // walls (隣接車両ブロック)
+      for(const wdef of STAGE.walls){
+        drawWorldRect(wdef, "#15171a", "#3a3d42");
+      }
+
+      drawGoalZone();
     }
-
-    // goal zone
-    drawGoalZone();
 
     // car
     drawCar();
@@ -1091,6 +1245,33 @@
   }
   function drawWorldRectStroke(rectDef){
     drawWorldRect(rectDef, null, "#e8e6df");
+  }
+
+  function drawLessonScene(){
+    const lesson=LESSONS[lessonIndex];
+    const start=worldToScreen(lesson.startPos.x,lesson.startPos.y);
+    const end=worldToScreen(lesson.goal.x+lesson.goal.w/2,lesson.goal.y+lesson.goal.h/2);
+    ctx.save();
+    ctx.strokeStyle="rgba(232,163,61,0.72)";
+    ctx.lineWidth=3;
+    ctx.setLineDash([7,7]);
+    ctx.beginPath();
+    ctx.moveTo(start.x,start.y);
+    if(lesson.id==="stop") ctx.lineTo(end.x,end.y);
+    else ctx.quadraticCurveTo(start.x,end.y,end.x,end.y);
+    ctx.stroke();
+    ctx.restore();
+
+    const complete=gameState==="lessonComplete";
+    drawWorldRect(lesson.goal,complete?"rgba(79,157,110,0.35)":"rgba(232,163,61,0.13)",complete?"#4f9d6e":"rgba(232,163,61,0.8)");
+    const center=worldToScreen(lesson.goal.x+lesson.goal.w/2,lesson.goal.y+lesson.goal.h/2);
+    ctx.save();
+    ctx.fillStyle=complete?"#86c29d":"#efbd6f";
+    ctx.font="bold 12px sans-serif";
+    ctx.textAlign="center";
+    ctx.textBaseline="middle";
+    ctx.fillText(lesson.goalLabel,center.x,center.y);
+    ctx.restore();
   }
 
   function drawGoalZone(){
@@ -1241,8 +1422,8 @@
   /* =========================================================
      座標系メモ
      heading=0 のとき、車の前方(フロントガラス側)は画面上方向(ワールドyの負方向)を向く(この式の構造上の定義)。
-     ただしスタート時のheadingはPI(鼻先が画面下を向く)。gear=-1(R)でスタートし、
-     アクセルを踏むとお尻側が先導して画面上(ゴール方向)へ進む — 実車の後退と同じ感覚。
+     教材と出庫ステージはheading=0で開始し、常に画面上側が車体前方になる。
+     gear=1(D)なら画面上へ前進、gear=-1(R)なら画面下へ後退する。
      car.x += speed*sin(heading)*dt; car.y += -speed*cos(heading)*dt;
   ========================================================== */
 
@@ -1308,14 +1489,19 @@
   }
 
   function enterGame(){
+    const resume=setupResumeGame;
     clearCalibrationTimer();
     smoothedSteerDeg=0;
     resetPressedInputs();
     document.getElementById("startScreen").classList.add("hidden");
     document.getElementById("startScreen").setAttribute("aria-hidden","true");
     document.getElementById("hud").classList.remove("hidden");
-    syncGearUI();
     setupResumeGame=false;
+    if(!resume && !trainingStarted) startLesson(0);
+    else{
+      syncGearUI();
+      if(activityMode==="lesson") updateLessonPanel();
+    }
   }
 
   init();
